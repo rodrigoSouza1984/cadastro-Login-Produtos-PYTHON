@@ -1,0 +1,34 @@
+# Virtual environment
+venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django generated files
+*.log
+db.sqlite3
+*.sqlite3
+*.pyc
+
+# Static files
+/static/
+
+# Media files
+/media/
+
+# Secret key
+*.secret_key
+
+# Configuration file
+*.env
+
+# IDE files
+.vscode/
+
+# Database configuration
+/database/
+
+# Environment variables file
+.env
