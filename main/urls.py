@@ -22,6 +22,6 @@ from django.urls import path, include
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('user/', include('user.urls')),  # Rotas para o app 'user'
-    path('login/', include('login.urls')),  # Rotas para o app 'produtos'
+    path('login/', include('login.urls')),  # Rotas para o app 'login'
     # Adicione mais includes conforme necessário
 ]
