@@ -11,10 +11,8 @@ from rest_framework.permissions import IsAuthenticated
 
 class UserViewSet2(ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    # @permission_classes([IsAuthenticated])
-    permission_classes = (IsAuthenticated)
-
+    serializer_class = UserSerializer 
+    
 
 @api_view(['POST'])
 def createUser(request):
@@ -23,56 +21,39 @@ def createUser(request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             print(2, serializer)
-            userInstance = serializer.create(serializer.validated_data)
+            userInstance = serializer.create(serializer.validated_data)                    
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 @api_view(['GET'])
-def getUsers(request):
+def getUsers(request):    
     if request.method == 'GET':
-        # Criar um objeto serializer
         serializer = UserSerializer()
-
-        # Chamar o método getUsers do serializer
         users = serializer.getUsers(request)
-
-        # Retornar na resposta da API
         return Response(users, status=status.HTTP_200_OK)
     
 
 @api_view(['GET'])
 def getUserById(request, userId):
     if request.method == 'GET':   
-           
-        # Criar um objeto serializer        
         serializer = UserSerializer()
-        # Chamar o método getUsers do serializer
         user = serializer.getUserById(userId)
-        # Retornar na resposta da API
         return Response(user, status=status.HTTP_200_OK)
     
-# @api_view(['GET'])
-# def getUserByEmail(request, email):
-#     if request.method == 'GET': 
-#         print(12345)        
-#         # Criar um objeto serializer        
-#         serializer = UserSerializer()
-#         # Chamar o método getUsers do serializer
-#         try:
-#             user = 1
-#             #user = serializer.getUserByEmail(email)
-#         except:
-#            return Response({'aaaaa'}) 
-#         # Retornar na resposta da API
-#         return Response(user, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def getUserByEmail(request, email):    
-        print (request.headers['Authorization'], request.user.is_authenticated)
-        return Response('aaaa', status=status.HTTP_200_OK)
-    
+def getUserByEmail(request, email):
+    if request.method == 'GET': 
+        serializer = UserSerializer()
+        
+        try:
+            user = 1
+        except:
+           return Response({'aaaaa'}) 
+        return Response(user, status=status.HTTP_200_OK)
+        
 
 @api_view(['PATCH'])
 def updatePatchUserById(request, userId):
@@ -81,7 +62,7 @@ def updatePatchUserById(request, userId):
         serializer = UserSerializer()
         user = serializer.updatePatchUserById(request.data, userId) 
 
-    if isinstance(user, dict):  # Verifica se user_data é um dicionário
+    if isinstance(user, dict):  
         return Response(user, status=status.HTTP_200_OK)
     else:
         return Response(user, status=status.HTTP_400_BAD_REQUEST)

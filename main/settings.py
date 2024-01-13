@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'rest_framework',
     'user',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    'userAvatar'
 ]
 
 MIDDLEWARE = [

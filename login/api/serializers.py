@@ -16,13 +16,7 @@ class LoginSerializer(ModelSerializer):
             
         userAuthenticade = authenticate(email=email, password=password)              
          
-        if userAuthenticade == None:
-
-            # try:                                                  
-            #     User.objects.get(email=email) 
-            # except:          
-            #     return Response({'Unauthorized': 'Email Invalido'}, status=status.HTTP_401_UNAUTHORIZED)
-                   
+        if userAuthenticade == None:                  
                                 
             return Response({'Unauthorized': 'Dados Inválidos'}, status=status.HTTP_401_UNAUTHORIZED)
                 
@@ -46,22 +40,16 @@ class LoginSerializer(ModelSerializer):
     def refreshToken(refresh_token):
         try:
             
-            # Tentar deserializar o token de atualização
             token = RefreshToken(refresh_token)
             
-            # Verificar se o token de atualização é válido, caso seja invalido ele gera a exception abaixo,  se for valido nao acontece nada passa direto no verify ele nao retorna nada so se der erro retorna a exception
             token.verify()
 
-            # busca o usuario pelo refresh token
             usuario = User.objects.get(id=token['user_id'])  
 
-            #converte para dicionario o user recuperado acima para pader retornar 
             userCovertedDicionary = model_to_dict(usuario)          
 
-            #cria um novo refresh token
             refresh = RefreshToken.for_user(usuario)    
 
-            #cria um novo access_token
             access_token = str(refresh.access_token)
 
             response_data = {                 
@@ -72,7 +60,6 @@ class LoginSerializer(ModelSerializer):
 
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
-            # Se ocorrer uma exceção, o token não é válido
             return Response('Refresh token Inválido ou expirado', status=status.HTTP_400_BAD_REQUEST)
 
                    

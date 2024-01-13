@@ -2,7 +2,13 @@ from rest_framework.serializers import ModelSerializer, ValidationError
 from user.models import User
 from django.contrib.auth.hashers import make_password
 
-from django.core.serializers import serialize
+from userAvatar.models import UserAvatar
+
+from django.db.models import Subquery, OuterRef, F
+
+from django.db import connection
+from collections import namedtuple
+
 import json
 
 from django.http import Http404
@@ -11,6 +17,8 @@ from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
 
 from rest_framework.response import Response
+
+from rest_framework import status
 
 class UserSerializer(ModelSerializer):    
     class Meta:
@@ -24,13 +32,10 @@ class UserSerializer(ModelSerializer):
             'age', 
             'ownerApp', 
             'height', 
-            'weight'   
+            'weight',               
         )
 
-    def create(self, body):
-        print(body)
-    # Lógica personalizada de criação aqui
-        # Verificar se 'name' está presente em validated_data
+    def create(self, body):        
                 
         if 'name' not in body:
             raise ValidationError("Name is required")
@@ -44,68 +49,125 @@ class UserSerializer(ModelSerializer):
         if 'password' not in body:
             raise ValidationError("password is required")
         
-        # Antes de criar o usuário, criptografe a senha
         body['password'] = make_password(body['password'])
 
-        #body['password'] = bcrypt.hashpw(body['password'].encode("utf-8"), bcrypt.gensalt())
-        user = User.objects.create(**body)
-        return user
+        user = User.objects.create(**body)        
 
+        return user
+    
 
     def getUsers(self, request):
-
-        # Configurações padrão
-        default_page = 1
-        default_take = 10
-
-        # Obtém os parâmetros da consulta
-        page = request.GET.get('page', default_page)
-        take = request.GET.get('take', default_take)
-
-        # Converte para inteiros
         try:
-            page = int(page)
-            take = int(take)
-        except ValueError:
-            return Response({"detail": "Os parâmetros 'page' e 'take' devem ser números inteiros."}, status=400)
 
-        # Garante que os valores sejam positivos
-        page = max(1, page)
-        take = max(1, take)
+            default_page = 1
+            default_take = 10
 
-        # Calcula o índice inicial e final para fatiar os resultados
-        start_index = (page - 1) * take
-        end_index = start_index + take
+            page = request.GET.get('page', default_page)
+            take = request.GET.get('take', default_take)
 
-        users = User.objects.all()[start_index:end_index]           
-        # usersInJson = serialize('json', users)        
-        # usersJsonConverteds = json.loads(usersInJson)
-        return json.loads(serialize('json', users))
+            try:
+                page = int(page)
+                take = int(take)
+            except ValueError:
+                return Response({"detail": "Os parâmetros 'page' e 'take' devem ser números inteiros."}, status=400)
+            
+            page = max(1, page)
+            take = max(1, take)
+            start_index = (page - 1) * take
+            end_index = start_index + take
 
+            avatar_subquery = UserAvatar.objects.filter(user=OuterRef('pk')).order_by('-id').values()[:1]
 
+            queryset = User.objects.annotate(
+                avatar_id=Subquery(avatar_subquery.values('id')),
+                avatar_name=Subquery(avatar_subquery.values('name')),
+                avatar_mimetype=Subquery(avatar_subquery.values('mimetype')),
+                avatar_url=Subquery(avatar_subquery.values('url'))
+            )            
+
+            results = queryset.values()[start_index:end_index]
+
+            if not results:
+                return []                
+
+            for result in results:                
+                if result['avatar_id'] is not None:
+                    result['avatar'] = {
+                        'id': result['avatar_id'],
+                        'name': result['avatar_name'],
+                        'url': result['avatar_url'],
+                        'mimetype': result['avatar_mimetype'],
+                    }
+
+                else:                
+                    result['avatar'] = None
+
+                del result['password']    
+                del result['avatar_id']
+                del result['avatar_name']
+                del result['avatar_url']
+                del result['avatar_mimetype']                           
+
+            return results            
+        
+        except Exception as e:        
+            raise e 
+          
+        
 
     def getUserById(self, userId):
         try:
-            user = User.objects.get(id=userId)            
+            avatar_subquery = UserAvatar.objects.filter(user=OuterRef('pk')).order_by('-id').values()[:1]#mais de 1 resultado tirar [:1]               
 
-            # Converte o objeto do modelo para um dicionário
-            userCovertedDicionary = model_to_dict(user)
+            queryset = User.objects.annotate(
+                avatar_id=Subquery(avatar_subquery.values('id')),
+                avatar_name=Subquery(avatar_subquery.values('name')),
+                avatar_mimetype=Subquery(avatar_subquery.values('mimetype')),
+                avatar_url=Subquery(avatar_subquery.values('url'))
+            )
 
-            return userCovertedDicionary
-        except User.DoesNotExist:
-            raise Http404("User does not exist")
+            queryset = queryset.filter(id=userId)
+           
+            result = queryset.values().first()  
+
+            if result is None:
+                raise ValidationError("User Not Found", code=status.HTTP_404_NOT_FOUND)          
+
+            if result['avatar_id'] is not None:
+                result['avatar'] = {
+                        'id': result['avatar_id'],
+                        'name': result['avatar_name'],
+                        'url': result['avatar_url'],
+                        'mimetype': result['avatar_mimetype'],
+                    }
+            else:                
+                result['avatar'] = None
+
+            del result['password'] 
+            del result['avatar_id']
+            del result['avatar_name']
+            del result['avatar_url']
+            del result['avatar_mimetype']              
+
+            return result         
+
+        except Exception as e:        
+            raise e
+        
+
         
     def getUserByEmail(self, email):
         try:            
-            print('aaaa')
+            
             user = User.objects.get(email=email)
 
-            # Converte o objeto do modelo para um dicionário
             userCovertedDicionary = model_to_dict(user)
 
             return userCovertedDicionary
+        
         except User.DoesNotExist:            
             raise Http404("User does not exist")
+        
         
 
     def updatePatchUserById(self, body, userId):
@@ -117,6 +179,8 @@ class UserSerializer(ModelSerializer):
             return userUpdated.data
         else:
             return userUpdated.errors
+        
+
         
     
     def updatePutUserById(self, body, userId):

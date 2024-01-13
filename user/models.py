@@ -14,7 +14,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     age = models.IntegerField(default=None, null=True, blank=True) # idade inteiro
     ownerApp = models.BooleanField(default=False, null=True, blank=True) # dono do app boleano
     height = models.FloatField(default=None, null=True, blank=True) # altura float
-    weight = models.FloatField(default=None, null=True, blank=True) # peso float     
+    weight = models.FloatField(default=None, null=True, blank=True) # peso float        
     
     objects = CustomUserManager()
 
