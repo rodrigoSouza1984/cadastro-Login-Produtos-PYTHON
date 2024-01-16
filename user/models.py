@@ -1,5 +1,6 @@
-from django.db import models
+from django.db import models 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+
 
 class CustomUserManager(BaseUserManager):
     pass  # Nenhuma modificação necessária, mantenha a classe vazia se não precisar de métodos personalizados
