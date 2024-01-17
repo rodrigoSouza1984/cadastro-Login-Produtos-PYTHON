@@ -3,6 +3,7 @@ from user.models import User
 from django.contrib.auth.hashers import make_password
 
 from userAvatar.models import UserAvatar
+from product.models import UserProduct
 
 from django.db.models import Subquery, OuterRef, F
 
@@ -19,6 +20,19 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 
 from rest_framework import status
+
+
+
+
+
+from django.db.models import Subquery, OuterRef, Func, CharField
+from django.db.models import Prefetch
+
+class GroupConcat(Func):
+        function = 'GROUP_CONCAT'
+        template = '%(function)s(%(distinct)s%(expressions)s)'
+        output_field = CharField()
+
 
 class UserSerializer(ModelSerializer):    
     class Meta:
@@ -112,8 +126,7 @@ class UserSerializer(ModelSerializer):
         
         except Exception as e:        
             raise e 
-          
-        
+     
 
     def getUserById(self, userId):
         try:
@@ -153,9 +166,8 @@ class UserSerializer(ModelSerializer):
 
         except Exception as e:        
             raise e
-        
 
-        
+
     def getUserByEmail(self, email):
         try:            
             
@@ -167,8 +179,7 @@ class UserSerializer(ModelSerializer):
         
         except User.DoesNotExist:            
             raise Http404("User does not exist")
-        
-        
+           
 
     def updatePatchUserById(self, body, userId):
         user = get_object_or_404(User, id=userId)
@@ -179,9 +190,7 @@ class UserSerializer(ModelSerializer):
             return userUpdated.data
         else:
             return userUpdated.errors
-        
-
-        
+         
     
     def updatePutUserById(self, body, userId):
         user = get_object_or_404(User, id=userId)
@@ -192,8 +201,7 @@ class UserSerializer(ModelSerializer):
             return userUpdated.data
         else:
             return userUpdated.errors
-        
-
+ 
     
     def deleteUserByIds(self, userIds, userId):
         user = get_object_or_404(User, id=userId)
