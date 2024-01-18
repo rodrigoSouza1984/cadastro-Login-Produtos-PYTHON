@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'user',
     'rest_framework_simplejwt',
     'userAvatar',
-    'product'
+    'product'      
 ]
 
 MIDDLEWARE = [

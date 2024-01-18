@@ -9,7 +9,14 @@ class UserProduct(models.Model):
     price = models.FloatField()
     quantity = models.IntegerField()
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)    
+    #user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)   
+
+    user = models.ForeignKey(
+        to='user.User',
+        on_delete=models.CASCADE,
+        related_name='products',
+        null=True
+    ) 
 
     def __str__(self):
         return f"UserProduct(id={self.id},title={self.title}, url={self.url}, price={self.price},quantity={self.quantity}, user={self.user})"

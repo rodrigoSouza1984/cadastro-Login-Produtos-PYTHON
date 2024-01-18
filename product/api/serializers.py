@@ -26,25 +26,27 @@ class UserProductSerializer(ModelSerializer):
 
      
         
-    def addProduct(self, body, userId):                 
+    def addProduct(self, body, userId):
+        user_exists = User.objects.filter(id=userId).first()
 
-            userExists = User.objects.filter(id=userId).first()            
-            
-            if userExists == None:                
-                 raise ValidationError("User Not Found", code=status.HTTP_404_NOT_FOUND)           
+        if user_exists is None:
+            raise ValidationError("User Not Found", code=status.HTTP_404_NOT_FOUND)
 
-            for product in body:
-                 print(product['user'])
-                 product['user'] = userExists 
+        for product_data in body:
+            # Adicione o usuário aos dados do produto
+            product_data['user'] = user_exists
 
-            user_products = [UserProduct(**data) for data in body]
-            productCreated = UserProduct.objects.bulk_create(user_products)                                            
+        # Crie os objetos UserProduct
+        user_products = [UserProduct(**data) for data in body]
 
-            # Serializar os objetos UserProduct criados
-            serializer = UserProductSerializer(productCreated, many=True)
-            returnListProducts = serializer.data
-            
-            return returnListProducts
+        # Use bulk_create para criar os objetos no banco de dados
+        product_created = UserProduct.objects.bulk_create(user_products)
+
+        # Serializar os objetos UserProduct criados
+        serializer = UserProductSerializer(product_created, many=True)
+        return_list_products = serializer.data
+
+        return return_list_products
     
     
     def getProductsByUserId(self, request, userId):

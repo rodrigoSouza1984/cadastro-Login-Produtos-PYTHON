@@ -15,7 +15,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     age = models.IntegerField(default=None, null=True, blank=True) # idade inteiro
     ownerApp = models.BooleanField(default=False, null=True, blank=True) # dono do app boleano
     height = models.FloatField(default=None, null=True, blank=True) # altura float
-    weight = models.FloatField(default=None, null=True, blank=True) # peso float        
+    weight = models.FloatField(default=None, null=True, blank=True) # peso float 
+
+    # products = models.ManyToOneRel(        
+    #     to='product.UserProduct',
+    #     related_name='users',        
+    # )           
     
     objects = CustomUserManager()
 
@@ -24,7 +29,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     def __str__(self):
         #return str(self)
-        return f"User(username={self.name},,name={self.name}, email={self.email}, age={self.age}, ownerApp={self.ownerApp}, height={self.height}, weight={self.weight})"
+        return f"User(username={self.name}, name={self.name}, email={self.email}, age={self.age}, ownerApp={self.ownerApp}, height={self.height})"
 
 # default=None: Isso define o valor padrão como None. 
     #Você pode ajustar isso para qualquer valor 
