@@ -2,29 +2,19 @@ from rest_framework.serializers import ModelSerializer, ValidationError
 from user.models import User
 from django.contrib.auth.hashers import make_password
 
-from userAvatar.models import UserAvatar
-from product.models import UserProduct
-
 from django.http import Http404
 
 from django.forms.models import model_to_dict
 
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 
 from rest_framework.response import Response
-
-from rest_framework import status
-
-
-
-
-from django.db.models import Subquery, OuterRef, Func, CharField, Subquery, OuterRef
 
 
 class UserSerializer(ModelSerializer):    
     class Meta:
         model = User
-        fields = '__all__'                        
+        fields = ('id', 'name', 'username', 'email', 'password', 'age', 'ownerApp', 'height', 'weight')                        
         
 
     def create(self, body):        
@@ -45,121 +35,11 @@ class UserSerializer(ModelSerializer):
 
         user = User.objects.create(**body)        
 
-        return user
-    
-
-    # def getUsers(self, request):
-    #     try:
-
-    #         default_page = 1
-    #         default_take = 10
-
-    #         page = request.GET.get('page', default_page)
-    #         take = request.GET.get('take', default_take)
-
-    #         try:
-    #             page = int(page)
-    #             take = int(take)
-    #         except ValueError:
-    #             return Response({"detail": "Os parâmetros 'page' e 'take' devem ser números inteiros."}, status=400)
-            
-    #         page = max(1, page)
-    #         take = max(1, take)
-    #         start_index = (page - 1) * take
-    #         end_index = start_index + take
-
-    #         avatar_subquery = UserAvatar.objects.filter(user=OuterRef('pk')).order_by('-id').values()[:1]
-
-    #         queryset = User.objects.annotate(
-    #             avatar_id=Subquery(avatar_subquery.values('id')),
-    #             avatar_name=Subquery(avatar_subquery.values('name')),
-    #             avatar_mimetype=Subquery(avatar_subquery.values('mimetype')),
-    #             avatar_url=Subquery(avatar_subquery.values('url'))
-    #         )            
-
-    #         results = queryset.values()[start_index:end_index]
-
-    #         if not results:
-    #             return []                
-
-    #         for result in results:                
-    #             if result['avatar_id'] is not None:
-    #                 result['avatar'] = {
-    #                     'id': result['avatar_id'],
-    #                     'name': result['avatar_name'],
-    #                     'url': result['avatar_url'],
-    #                     'mimetype': result['avatar_mimetype'],
-    #                 }
-
-    #             else:                
-    #                 result['avatar'] = None
-
-    #             del result['password']    
-    #             del result['avatar_id']
-    #             del result['avatar_name']
-    #             del result['avatar_url']
-    #             del result['avatar_mimetype']                           
-
-    #         return results            
-        
-    #     except Exception as e:        
-    #         raise e 
+        return user 
      
 
-
-
-
     def getUsers(self, request):
-        try:
-
-            
-            user_with_products = get_object_or_404(User.objects.prefetch_related('products').select_related('avatar'), id=4)  
-
-
-            
-            if user_with_products:
-                #avatar = user_with_products.avatar()
-
-                print(user_with_products.avatar, 8888)
-                products_list = user_with_products.products.all()
-
-                response_data = {
-                    'user': {
-                        'id': user_with_products.id,
-                        'username': user_with_products.username,
-                        'name': user_with_products.name,
-                        # Adicione outros campos do usuário conforme necessário
-
-                        'avatar': {
-                            'id': user_with_products.avatar.id,
-                            'name': user_with_products.avatar.name,                            
-                            'url':  user_with_products.avatar.url,                            
-                            'mimetype': user_with_products.avatar.mimetype,                            
-                            # Adicione outros campos do avatar conforme necessário
-                        },
-
-                        'products': [
-                            {
-                                'id': product.id,
-                                'title': product.title,
-                                'url': product.url,
-                                'price': product.price,
-                                'quantity': product.quantity,
-                                # Adicione outros campos do produto conforme necessário
-                            }
-                            for product in products_list
-                        ],
-                    },
-
-                    
-                }
-                print(response_data)
-
-                return response_data
-            else:
-                print("Usuário não encontrado.")
-
-            return True
+        try:      
 
             default_page = 1
             default_take = 10
@@ -176,87 +56,131 @@ class UserSerializer(ModelSerializer):
             page = max(1, page)
             take = max(1, take)
             start_index = (page - 1) * take
-            end_index = start_index + take
+            end_index = start_index + take           
 
-            avatar_subquery = UserAvatar.objects.filter(user=OuterRef('pk')).order_by('-id').values()[:1]
+            users = User.objects.prefetch_related('products', 'avatar').all()[start_index:end_index]
+            
+            usersToReturn = []
 
-            queryset = User.objects.annotate(
-                avatar_id=Subquery(avatar_subquery.values('id')),
-                avatar_name=Subquery(avatar_subquery.values('name')),
-                avatar_mimetype=Subquery(avatar_subquery.values('mimetype')),
-                avatar_url=Subquery(avatar_subquery.values('url'))
-            )            
+            for user in users:
+                avatar_info = None
 
-            results = queryset.values()[start_index:end_index]
+                if hasattr(user, 'products'):
+                    # O usuário tem produtos, você pode acessá-los usando user.products.all()
+                    products_info = [
+                        {
+                            'product_id': product.id,
+                            'product_title': product.title,
+                            'product_url': product.url,
+                            'product_price': product.price,
+                            'product_quantity': product.quantity,
+                            # Adicione outros campos do produto conforme necessário
+                        }
+                        for product in user.products.all()
+                    ]
+                else:
+                    # O usuário não tem produtos
+                    products_info = None
 
-            if not results:
-                return []                
+                
 
-            for result in results:                
-                if result['avatar_id'] is not None:
-                    result['avatar'] = {
-                        'id': result['avatar_id'],
-                        'name': result['avatar_name'],
-                        'url': result['avatar_url'],
-                        'mimetype': result['avatar_mimetype'],
+                if hasattr(user, 'avatar') and user.avatar is not None:
+                    if hasattr(user, 'avatar') and user.avatar is not None:                        
+                        avatar_info = {
+                            'avatar_id': user.avatar.id,
+                            'avatar_name': user.avatar.name,
+                            'avatar_url': user.avatar.url,
+                            'mimetype': user.avatar.mimetype
+                            # Adicione outros campos do avatar conforme necessário
+                        }                    
+                    else:                        
+                        avatar_info = None               
+                
+
+                userData = {
+                        'id': user.id,
+                        'username': user.username,
+                        'name': user.name,
+                        'username': user.username,
+                        'email': user.email,
+                        'age': user.age,
+                        'ownerApp': user.ownerApp,
+                        'height': user.height,
+                        'weight': user.weight,                        
+
+                        'avatar': avatar_info,
+
+                        'products': products_info
                     }
 
-                else:                
-                    result['avatar'] = None
+                usersToReturn.append(userData)                    
 
-                del result['password']    
-                del result['avatar_id']
-                del result['avatar_name']
-                del result['avatar_url']
-                del result['avatar_mimetype']                           
-
-            return results            
-        
+            return usersToReturn
+                   
         except Exception as e:        
             raise e 
-   
-
-
-
-
-
 
 
     def getUserById(self, userId):
         try:
-            avatar_subquery = UserAvatar.objects.filter(user=OuterRef('pk')).order_by('-id').values()[:1]#mais de 1 resultado tirar [:1]               
+            user= get_object_or_404(User.objects.prefetch_related('products').select_related('avatar'), id=userId)                          
+                
+            if user:
+                                        
+                #products_list = user_with_products.products.all()
 
-            queryset = User.objects.annotate(
-                avatar_id=Subquery(avatar_subquery.values('id')),
-                avatar_name=Subquery(avatar_subquery.values('name')),
-                avatar_mimetype=Subquery(avatar_subquery.values('mimetype')),
-                avatar_url=Subquery(avatar_subquery.values('url'))
-            )
+                if hasattr(user, 'avatar') and user.avatar is not None:
+                    avatar_info = {
+                        'avatar_id': user.avatar.id,
+                        'avatar_name': user.avatar.name,
+                        'avatar_url': user.avatar.url,
+                        'mimetype': user.avatar.mimetype
+                        # Adicione outros campos do avatar conforme necessário
+                }                    
+                else:
+                    avatar_info = None 
 
-            queryset = queryset.filter(id=userId)
-           
-            result = queryset.values().first()  
+                if hasattr(user, 'products'):
+                    # O usuário tem produtos, você pode acessá-los usando user.products.all()
+                    products_info = [
+                        {
+                            'product_id': product.id,
+                            'product_title': product.title,
+                            'product_url': product.url,
+                            'product_price': product.price,
+                            'product_quantity': product.quantity,
+                            # Adicione outros campos do produto conforme necessário
+                        }
+                        for product in user.products.all()
+                    ]
+                else:
+                    # O usuário não tem produtos
+                    products_info = None                                  
 
-            if result is None:
-                raise ValidationError("User Not Found", code=status.HTTP_404_NOT_FOUND)          
+                response_data = {
+                    'user': {
+                                'id': user.id ,
+                                'username': user.username,
+                                'name': user.name,
+                                'username': user.username,
+                                'email': user.email,
+                                'age': user.age,
+                                'ownerApp': user.ownerApp,
+                                'height': user.height,
+                                'weight': user.weight,
+                                # Adicione outros campos do usuário conforme necessário
 
-            if result['avatar_id'] is not None:
-                result['avatar'] = {
-                        'id': result['avatar_id'],
-                        'name': result['avatar_name'],
-                        'url': result['avatar_url'],
-                        'mimetype': result['avatar_mimetype'],
-                    }
-            else:                
-                result['avatar'] = None
+                                
+                                'avatar': avatar_info,   
 
-            del result['password'] 
-            del result['avatar_id']
-            del result['avatar_name']
-            del result['avatar_url']
-            del result['avatar_mimetype']              
+                                'products': products_info                             
+                            },                           
+                }                            
+            else:
+                print("Usuário não encontrado.")
 
-            return result         
+            return response_data     
+                   
 
         except Exception as e:        
             raise e

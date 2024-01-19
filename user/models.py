@@ -7,7 +7,7 @@ class CustomUserManager(BaseUserManager):
 
 
 # Create your models here.
-class User(AbstractBaseUser, PermissionsMixin):  
+class User(AbstractBaseUser, PermissionsMixin):   
     username = models.CharField(max_length=150, null=True)  
     name = models.CharField(max_length=150) # nome - tipo string porem o charfield tem como configurar o tamanho
     email = models.EmailField(unique=True) # emai tipo de dados texto
@@ -15,12 +15,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     age = models.IntegerField(default=None, null=True, blank=True) # idade inteiro
     ownerApp = models.BooleanField(default=False, null=True, blank=True) # dono do app boleano
     height = models.FloatField(default=None, null=True, blank=True) # altura float
-    weight = models.FloatField(default=None, null=True, blank=True) # peso float 
-
-    # products = models.ManyToOneRel(        
-    #     to='product.UserProduct',
-    #     related_name='users',        
-    # )           
+    weight = models.FloatField(default=None, null=True, blank=True) # peso float           
     
     objects = CustomUserManager()
 
