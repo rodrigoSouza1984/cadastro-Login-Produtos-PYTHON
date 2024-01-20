@@ -1,0 +1,20 @@
+#usar para banco de dados local no run da api normal
+# DB_NAME=python_login_cadastro_produtos
+# DB_USER=root
+# DB_PASSWORD=123456
+# MB_HOST=localhost
+# DB_PORT=3306
+
+#usar para o conatiner docker for rodar o host tem que ser db
+DB_NAME=python_login_cadastro_produtos
+DB_USER=root
+DB_PASSWORD=123456
+MB_HOST=db
+DB_PORT=3306
+
+#OBS: in case the run project and him some env var not change you must change name of var env and restart
+#type happened with var host local use localhost and run docker compose use db change name var env to take memory 
+#this var cause it happen
+
+
+

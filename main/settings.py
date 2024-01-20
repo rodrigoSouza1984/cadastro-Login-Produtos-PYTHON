@@ -96,7 +96,7 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),   # Ou o endereço do seu servidor MySQL
+        'HOST': os.getenv('MB_HOST'),   # Ou o endereço do seu servidor MySQL
         'PORT': os.getenv('DB_PORT'),        # Porta padrão do MySQL
     }
 }
