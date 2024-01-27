@@ -14,6 +14,7 @@ rodar com Docker
   
 * terminal -> docker-compose up -d db
 
+------------------------------------------------
 * agora crie um banco de dados 
 
 - docker exec -it mysql-container bash
@@ -24,8 +25,12 @@ rodar com Docker
 
 -CREATE DATABASE python_login_cadastro_produtos
 
---ou em uma linha de comando apenas ]
+----------------------------------------------------------------
+
+--ou em uma linha de comando apenas para criar o banco 
 ->docker exec -i nome_do_seu_container_mysql mysql -u seu_usuario -pseu_senha -e "CREATE DATABASE nome_do_seu_banco;"
+
+-----------------------------------------------------------------------
 
 * terminal -> docker-compose stop db
 
