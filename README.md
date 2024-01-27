@@ -32,11 +32,19 @@ rodar com Docker
 
 -----------------------------------------------------------------------
 
+para ver se o banco foi criado
+
+mysql -u root -p -e "SHOW DATABASES;"
+
+----------------------------------------------------------------------
+
 * terminal -> docker-compose stop db
 
 * agora rode -> docker-compose up -d
 
 * para parar -> docker-compose down
+
+------------------------------------------------------------
 
 * agora rode td docker-compose up -d
 
