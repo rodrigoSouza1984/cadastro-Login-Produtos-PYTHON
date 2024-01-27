@@ -10,21 +10,30 @@ rodar com Docker
 
 *no .env configure o banco de dados -> host tem que ser 'db'
 
+* 1 crie a tabela no banco de dados
+  
 * terminal -> docker-compose up -d db
 
 * agora crie um banco de dados 
 
 - docker exec -it mysql-container bash
 
-- mysql -u root -p   -> digite a senha do seu banco
+- mysql -u root -p
+
+- -> digite a senha do seu banco
 
 -CREATE DATABASE python_login_cadastro_produtos
+
+--ou em uma linha de comando apenas ]
+->docker exec -i nome_do_seu_container_mysql mysql -u seu_usuario -pseu_senha -e "CREATE DATABASE nome_do_seu_banco;"
 
 * terminal -> docker-compose stop db
 
 * agora rode -> docker-compose up -d
 
 * para parar -> docker-compose down
+
+* agora rode td docker-compose up -d
 
 *************************
 
